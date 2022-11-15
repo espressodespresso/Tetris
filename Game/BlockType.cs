@@ -14,6 +14,8 @@ public class BlockType
         this.character = character;
         currentPos = 0;
     }
+    
+    public BlockType() {}
 
     public void VaryCurrentPos()
     {
@@ -25,5 +27,13 @@ public class BlockType
         {
             currentPos++;
         }
+    }
+
+    public void Duplicate(BlockType blockType)
+    {
+        center = blockType.center;
+        pos = blockType.pos;
+        character = blockType.character;
+        currentPos = blockType.currentPos;
     }
 }
