@@ -4,7 +4,7 @@ public class Playfield
 {
     private const int x = 10;
     private const int y = 16;
-    private int[] grid = new[] {9, 19, 29, 39,};
+    private const int refreshRate = 1;
     private Block _block = new Block();
     private List<BlockType> field = new List<BlockType>();
     private BlockType active;
@@ -13,12 +13,15 @@ public class Playfield
     {
         
     }
+
+    public void NewTetromino()
+    {
+        active = _block.GetType(new Random().Next(0, 7));
+    }
     
     public void Draw()
     {
-        // TEMP
-        field.Add(_block.GetType(new Random().Next(0, 7)));
-
+        Console.Clear();
         Dictionary<int, char> renderField = Render();
 
         for (int i = 0; i < x * y; i++)
@@ -32,7 +35,6 @@ public class Playfield
                 Console.Write(ReturnCharacter(renderField, i));
             }
         }
-        
     }
 
     public Dictionary<int, char> Render()
@@ -47,6 +49,13 @@ public class Playfield
                 renderField.Add(fieldPos, iBlockType.character);
             }
         }
+        
+        renderField.Add(active.center, active.character);
+        foreach (var iActive in active.pos[active.currentPos])
+        {
+            int fieldPos = active.center + iActive;
+            renderField.Add(fieldPos, active.character);
+        }
 
         return renderField;
     }
@@ -59,5 +68,86 @@ public class Playfield
         }
 
         return '-';
+    }
+
+    public void PlayerInput()
+    {
+        while (true)
+        {
+            switch (Console.ReadKey(true).Key)
+            {
+                case ConsoleKey.UpArrow:
+                    active.VaryCurrentPos();
+                    Draw();
+                    break;
+                case ConsoleKey.RightArrow:
+                    if (!BoundaryDetection(true))
+                    {
+                        active.center++;
+                    }
+                    
+                    Draw();
+                    break;
+                case ConsoleKey.LeftArrow:
+                    if (!BoundaryDetection(false))
+                    {
+                        active.center--;
+                    }
+                    
+                    Draw();
+                    break;
+                case ConsoleKey.DownArrow:
+                    if (!BoundaryDetection(false))
+                    {
+                        active.center = active.center + 10;
+                    }
+                    
+                    Draw();
+                    break;
+                case ConsoleKey.I:
+                    Draw();
+                    break;
+            }
+            
+            Thread.Sleep(10);
+        }
+    }
+
+    public bool BoundaryDetection(bool vary)
+    {
+        List<int> tetrimino = new List<int>();
+        tetrimino.Add(active.center);
+        foreach (var charPos in active.pos[active.currentPos])
+        {
+            tetrimino.Add(active.center + charPos);
+        }
+
+        bool collision = false;
+        foreach (var i in tetrimino)
+        {
+            if (vary)
+            {
+                if (i % 10 == 9)
+                {
+                    collision = true;
+                }
+            }
+            else
+            {
+                if (i % 10 == 0)
+                {
+                    collision = true;
+                }
+            }
+
+            if (i >= 150)
+            {
+                field.Add(active);
+                NewTetromino();
+                break;
+            }
+        }
+
+        return collision;
     }
 }

@@ -14,4 +14,16 @@ public class BlockType
         this.character = character;
         currentPos = 0;
     }
+
+    public void VaryCurrentPos()
+    {
+        if (currentPos == pos.Count - 1)
+        {
+            currentPos = 0;
+        }
+        else
+        {
+            currentPos++;
+        }
+    }
 }
