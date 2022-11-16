@@ -15,24 +15,20 @@ public class PlayfieldDetection
         LEFT    // 2
     }
 
-    
-
-    public bool BoundaryDetection(BlockType active, int direction)
+    public List<int> InputDetection(BlockType temp, int direction)
     {
-        BlockType temp = new BlockType();
-        temp.Duplicate(active);
         switch (direction)
         {
-            case 0:
+            case (int) Direction.RIGHT:
                 temp.center++;
                 break;
-            case 1:
+            case (int) Direction.LEFT:
                 temp.center--;
                 break;
-            case 2:
+            case (int) Direction.DOWN:
                 temp.center += 10;
                 break;
-            case 3:
+            case (int) Direction.ROTATE:
                 temp.VaryCurrentPos();
                 break;
         }
@@ -43,7 +39,16 @@ public class PlayfieldDetection
             activeFieldPos.Add(temp.center + fieldPos);
         }
 
-        if (direction == 2) // Down
+        return activeFieldPos;
+    }
+
+    public bool BoundaryDetection(BlockType active, int direction)
+    {
+        BlockType temp = new BlockType();
+        temp.Duplicate(active);
+        List<int> activeFieldPos = InputDetection(temp, direction);
+
+        if (direction == (int) Direction.DOWN) // Down
         {
             foreach (var fieldPos in activeFieldPos)
             {
@@ -122,5 +127,43 @@ public class PlayfieldDetection
         }
 
         return fieldpLocations;
+    }
+
+    public bool InterTDetection(List<BlockType> field, BlockType active, int direction)
+    {
+        BlockType temp = new BlockType();
+        temp.Duplicate(active);
+        if (direction == (int) Direction.DOWN) // Down
+        {
+            temp.center += 10;
+        }
+        List<int> activeFieldPos = InputDetection(temp, direction);
+
+        List<int> bRenderField = new List<int>();
+        foreach (var i in field)
+        {
+            bRenderField.Add(i.center);
+            foreach (var id in i.pos[i.currentPos])
+            {
+                bRenderField.Add(i.center + id);
+            }
+        }
+
+        foreach (var i in activeFieldPos)
+        {
+            if (bRenderField.Contains(i))
+            {
+                Console.WriteLine("run");
+                Thread.Sleep(2000);
+                if (direction == (int) Direction.DOWN)
+                {
+                    active.center += 10;
+                    Program.playfield.NewActive();
+                }
+                return true;
+            }
+        }
+
+        return false;
     }
 }

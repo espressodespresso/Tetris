@@ -34,13 +34,15 @@ public class Playfield
 
         for (int i = 0; i < x * y; i++)
         {
+            char displayChar = _block.ReturnCharacter(renderField, i);
+            Console.ForegroundColor = _block.ReturnCColor(displayChar);
             if (i != 0 && i % 10 == 9)
             {
-                Console.WriteLine(ReturnCharacter(renderField, i));
+                Console.WriteLine(displayChar);
             }
             else
             {
-                Console.Write(ReturnCharacter(renderField, i));
+                Console.Write(displayChar);
             }
         }
     }
@@ -56,8 +58,21 @@ public class Playfield
                 renderField.Add(blockType.center + posField, blockType.character);
             }
         }
+
+        try
+        {
+            renderField.Add(active.center, active.character);
+        }
+        catch (Exception)
+        {
+            Console.WriteLine("ACTIVE : " + active.center);
+            foreach (var i in renderField.Keys)
+            {
+                Console.WriteLine(i);
+            }
+            Environment.Exit(0);
+        }
         
-        renderField.Add(active.center, active.character);
         foreach (var posField in active.pos[active.currentPos])
         {
             renderField.Add(active.center + posField, active.character);
@@ -66,24 +81,6 @@ public class Playfield
         return renderField;
     }
 
-    public char ReturnCharacter(Dictionary<int, char> renderField, int i)
-    {
-        if (renderField.ContainsKey(i))
-        {
-            return renderField[i];
-        }
-
-        return '-';
-    }
-
-    private enum Direction
-    {
-        RIGHT, // 0
-        LEFT,  // 1
-        DOWN,  // 2
-        ROTATE // 3
-    }
-    
     public void PlayerInput()
     {
         while (true)
@@ -93,32 +90,41 @@ public class Playfield
                 case ConsoleKey.UpArrow:
                     if (!_playfieldDetection.BoundaryDetection(active, (int) Direction.ROTATE))
                     {
-                        active.VaryCurrentPos();
+                        if (!_playfieldDetection.InterTDetection(field, active, (int) Direction.ROTATE))
+                        {
+                            active.VaryCurrentPos();
+                        }
                     }
                     Draw();
                     break;
                 case ConsoleKey.RightArrow:
                     if (!_playfieldDetection.BoundaryDetection(active, (int) Direction.RIGHT))
                     {
-                        active.center++;
+                        if (!_playfieldDetection.InterTDetection(field, active, (int) Direction.RIGHT))
+                        {
+                            active.center++;
+                        }
                     }
                     Draw();
                     break;
                 case ConsoleKey.LeftArrow:
                     if (!_playfieldDetection.BoundaryDetection(active, (int) Direction.LEFT))
                     {
-                        active.center--;
+                        if (!_playfieldDetection.InterTDetection(field, active, (int) Direction.LEFT))
+                        {
+                            active.center--;
+                        }
                     }
                     Draw();
                     break;
                 case ConsoleKey.DownArrow:
                     if (!_playfieldDetection.BoundaryDetection(active, (int) Direction.DOWN))
                     {
-                        active.center += 10;
+                        if (!_playfieldDetection.InterTDetection(field, active, (int) Direction.DOWN))
+                        {
+                            active.center += 10;
+                        }
                     }
-                    Draw();
-                    break;
-                case ConsoleKey.I:
                     Draw();
                     break;
             }

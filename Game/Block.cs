@@ -26,7 +26,7 @@ public class Block
         {
             -1, -2, -3
         }
-    }, 'I');
+    }, 'I', ConsoleColor.Cyan);
     
     private BlockType J = new BlockType(23, new List<int[]>()
     {
@@ -46,7 +46,7 @@ public class Block
         {
             -1, -10, -20
         }
-    }, 'J');
+    }, 'J', ConsoleColor.DarkBlue);
 
     private BlockType L = new BlockType(23, new List<int[]>()
     {
@@ -66,7 +66,7 @@ public class Block
         {
             -1, 10, 20
         }
-    }, 'L');
+    }, 'L', ConsoleColor.Gray);
     
     private BlockType O = new BlockType(23, new List<int[]>()
     {
@@ -74,7 +74,7 @@ public class Block
         {
             1, 10, 11
         }
-    }, 'O');
+    }, 'O', ConsoleColor.Yellow);
     
     private BlockType S = new BlockType(23, new List<int[]>()
     {
@@ -86,7 +86,7 @@ public class Block
         {
             -10, 1, 11
         }
-    }, 'S');
+    }, 'S', ConsoleColor.Green);
     
     private BlockType T = new BlockType(23, new List<int[]>()
     {
@@ -106,7 +106,7 @@ public class Block
         {
             -10, -1, 10
         }
-    }, 'T');
+    }, 'T', ConsoleColor.DarkMagenta);
     
     private BlockType Z = new BlockType(23, new List<int[]>()
     {
@@ -116,9 +116,9 @@ public class Block
         },
         new int[]
         {
-            -10, -1, -9
+            -9, 1, 10
         }
-    }, 'Z');
+    }, 'Z', ConsoleColor.Red);
     
     public BlockType GetType(int type)
     {
@@ -142,5 +142,38 @@ public class Block
 
         // Uh-oh
         return null;
+    }
+
+    public ConsoleColor ReturnCColor(char character)
+    {
+        switch (character)
+        {
+            case 'I':
+                return ConsoleColor.Cyan;
+            case 'J':
+                return ConsoleColor.DarkBlue;
+            case 'L':
+                return ConsoleColor.Gray;
+            case 'O':
+                return ConsoleColor.Yellow;
+            case 'S':
+                return ConsoleColor.Green;
+            case 'T':
+                return ConsoleColor.DarkMagenta;
+            case 'Z':
+                return ConsoleColor.Red;
+        }
+
+        return ConsoleColor.White;
+    }
+    
+    public char ReturnCharacter(Dictionary<int, char> renderField, int i)
+    {
+        if (renderField.ContainsKey(i))
+        {
+            return renderField[i];
+        }
+
+        return '-';
     }
 }
