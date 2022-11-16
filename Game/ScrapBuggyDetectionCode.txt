@@ -1,0 +1,107 @@
+public bool BoundaryDetection(bool vary)
+    {
+        List<int> tetrimino = new List<int>();
+        tetrimino.Add(active.center);
+        foreach (var charPos in active.pos[active.currentPos])
+        {
+            tetrimino.Add(active.center + charPos);
+        }
+
+        bool collision = false;
+        foreach (var i in tetrimino)
+        {
+            if (vary)
+            {
+                if (i % 10 == 9)
+                {
+                    collision = true;
+                }
+            }
+            else
+            {
+                if (i % 10 == 0)
+                {
+                    collision = true;
+                }
+            }
+
+            if (i >= 150)
+            {
+                field.Add(active);
+                NewActive();
+                break;
+            }
+        }
+
+        return collision;
+    }
+
+    private enum DIRECTION
+    {
+        RIGHT,
+        LEFT,
+        DOWN
+    }
+    
+    public bool InterTDetection(int direction)
+    {
+        List<int> basicRenderField = new List<int>();
+        foreach (var iBlockType in field)
+        {
+            basicRenderField.Add(iBlockType.center);
+            foreach (var iFieldPos in iBlockType.pos[iBlockType.currentPos])
+            {
+                int fieldPos = iBlockType.center + iFieldPos;
+                basicRenderField.Add(fieldPos);
+            }
+        }
+
+        // 
+        BlockType temp = new BlockType(active.center, active.pos, active.character);
+        temp.currentPos = active.currentPos;
+        
+        switch (direction)
+        {
+            case 0:
+                temp.center++;
+                break;
+            case 1:
+                temp.center--;
+                break;
+            case 2:
+                temp.center = temp.center + 10;
+                break;
+        }
+
+        List<int> posCheck = new List<int>();
+        posCheck.Add(temp.center);
+        foreach (var i in temp.pos[temp.currentPos])
+        {
+            posCheck.Add(temp.center + i);
+        }
+
+        // DEBUG
+        foreach (var wasd in posCheck)
+        {
+            Console.WriteLine(wasd);
+        }
+
+        
+        foreach (var dasd in basicRenderField)
+        {
+            Console.WriteLine(dasd);
+            
+        }
+        
+        // END DEBUG
+        
+        foreach (var ib in posCheck)
+        {
+            if (basicRenderField.Contains(ib))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }

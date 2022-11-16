@@ -7,17 +7,24 @@ public class Playfield
     private const int refreshRate = 1;
     private Block _block = new Block();
     private List<BlockType> field = new List<BlockType>();
-    private BlockType active;
+    private BlockType active = new BlockType();
     private PlayfieldDetection _playfieldDetection = new PlayfieldDetection();
 
-    public void Reset()
+    // Past Harry : Please never do active = blah again, tends to break stuff for some unknown reason
+    // Do proprietary func .Duplicate instead
+    
+    public Playfield()
     {
-        
+        active.Duplicate(_block.GetType(new Random().Next(0, 7)));
     }
-
+    
     public void NewActive()
     {
-        active = _block.GetType(0);
+        BlockType insert = new BlockType();
+        insert.Duplicate(active);
+        field.Add(insert);
+        BlockType newActive = _block.GetType(new Random().Next(0, 7));
+        active.Duplicate(newActive);
     }
     
     public void Draw()
@@ -41,22 +48,19 @@ public class Playfield
     public Dictionary<int, char> Render()
     {
         Dictionary<int, char> renderField = new Dictionary<int, char>();
-        foreach (var iBlockType in field)
+        foreach (var blockType in field)
         {
-            renderField.Add(iBlockType.center, iBlockType.character);
-            foreach (var iFieldPos in iBlockType.pos[iBlockType.currentPos])
+            renderField.Add(blockType.center, blockType.character);
+            foreach (var posField in blockType.pos[blockType.currentPos])
             {
-                int fieldPos = iBlockType.center + iFieldPos;
-                renderField.Add(fieldPos, iBlockType.character);
+                renderField.Add(blockType.center + posField, blockType.character);
             }
         }
         
         renderField.Add(active.center, active.character);
-        
-        foreach (var iActive in active.pos[active.currentPos])
+        foreach (var posField in active.pos[active.currentPos])
         {
-            int fieldPos = active.center + iActive;
-            renderField.Add(fieldPos, active.character);
+            renderField.Add(active.center + posField, active.character);
         }
 
         return renderField;
@@ -108,7 +112,10 @@ public class Playfield
                     Draw();
                     break;
                 case ConsoleKey.DownArrow:
-                    active.center += 10;
+                    if (!_playfieldDetection.BoundaryDetection(active, (int) Direction.DOWN))
+                    {
+                        active.center += 10;
+                    }
                     Draw();
                     break;
                 case ConsoleKey.I:

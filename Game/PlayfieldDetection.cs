@@ -15,6 +15,8 @@ public class PlayfieldDetection
         LEFT    // 2
     }
 
+    
+
     public bool BoundaryDetection(BlockType active, int direction)
     {
         BlockType temp = new BlockType();
@@ -28,6 +30,7 @@ public class PlayfieldDetection
                 temp.center--;
                 break;
             case 2:
+                temp.center += 10;
                 break;
             case 3:
                 temp.VaryCurrentPos();
@@ -40,6 +43,19 @@ public class PlayfieldDetection
             activeFieldPos.Add(temp.center + fieldPos);
         }
 
+        if (direction == 2) // Down
+        {
+            foreach (var fieldPos in activeFieldPos)
+            {
+                if (fieldPos > 149)
+                {
+                    active.center += 10;
+                    Program.playfield.NewActive();
+                    return true;
+                }
+            }
+        }
+        
         List<int> fieldpLocations = GetpLocation(activeFieldPos);
         if (fieldpLocations.Contains(1) && fieldpLocations.Contains(2) && !fieldpLocations.Contains(0))
         {

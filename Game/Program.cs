@@ -2,6 +2,8 @@
 
 static class Program
 {
+    public static Playfield playfield = new Playfield();
+    
     static void Main()
     {
         Start();
@@ -9,8 +11,6 @@ static class Program
 
     public static void Start()
     {
-        Playfield playfield = new Playfield();
-        playfield.NewActive();
         playfield.Draw();
         Task user = Task.Factory.StartNew(() => playfield.PlayerInput());
         Task.WaitAll(user);
