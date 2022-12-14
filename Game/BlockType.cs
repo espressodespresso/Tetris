@@ -2,12 +2,42 @@
 
 public class BlockType
 {
-    public int center { get; set; }
-    public List<int[]> pos { get; set; }
-    public char character { get; set; }
-    public int currentPos { get; set; }
-    public ConsoleColor color { get; set; }
+    private int center;
+    private List<int[]> pos;
+    private char character;
+    private int currentPos;
+    private ConsoleColor color;
 
+    public int Center
+    {
+        get => center;
+        set => center = value;
+    }
+
+    public List<int[]> Pos
+    {
+        get => pos;
+        set => pos = value;
+    }
+
+    public char Character
+    {
+        get => character;
+        set => character = value;
+    }
+
+    public int CurrentPos
+    {
+        get => currentPos;
+        set => currentPos = value;
+    }
+
+    public ConsoleColor Color
+    {
+        get => color;
+        set => color = value;
+    }
+    
     public BlockType(int center, List<int[]> pos, char character, ConsoleColor color)
     {
         this.center = center;

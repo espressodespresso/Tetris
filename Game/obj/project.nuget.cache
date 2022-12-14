@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "jg+BkGusdCXQcg2ddnLmmC9JE6eAB2wxpVYIacqCHDaVj7xReJ0wlWhGiGp/IyDwTzkRRyvoDsmVZxOyTdbmgQ==",
+  "dgSpecHash": "MwAb9kbgbWmIPLkW2cez7HpjIGLm2xAEYsKlT6B4REbZnJNZ5xaPRMK3LkQRKdgc/ymnFFEOnfO5vJu0t7HDug==",
   "success": true,
-  "projectFilePath": "C:\\Users\\thene\\RiderProjects\\Game\\Game\\Game.csproj",
+  "projectFilePath": "/home/harrymartel/RiderProjects/Game/Game/Game.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

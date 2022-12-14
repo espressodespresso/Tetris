@@ -20,29 +20,29 @@ public class PlayfieldDetection
         switch (direction)
         {
             case (int) Direction.RIGHT:
-                temp.center++;
+                temp.Center++;
                 break;
             case (int) Direction.LEFT:
-                temp.center--;
+                temp.Center--;
                 break;
             case (int) Direction.DOWN:
-                temp.center += 10;
+                temp.Center += 10;
                 break;
             case (int) Direction.ROTATE:
                 temp.VaryCurrentPos();
                 break;
         }
         List<int> activeFieldPos = new List<int>();
-        activeFieldPos.Add(temp.center);
-        foreach (var fieldPos in temp.pos[temp.currentPos])
+        activeFieldPos.Add(temp.Center);
+        foreach (var fieldPos in temp.Pos[temp.CurrentPos])
         {
-            activeFieldPos.Add(temp.center + fieldPos);
+            activeFieldPos.Add(temp.Center + fieldPos);
         }
 
         return activeFieldPos;
     }
 
-    public bool BoundaryDetection(BlockType active, int direction)
+    public bool BoundaryDetection(List<BlockType> field, BlockType active, int direction)
     {
         BlockType temp = new BlockType();
         temp.Duplicate(active);
@@ -54,7 +54,8 @@ public class PlayfieldDetection
             {
                 if (fieldPos > 149)
                 {
-                    active.center += 10;
+                    active.Center += 10;
+                    LineDetection(field);
                     Program.playfield.NewActive();
                     return true;
                 }
@@ -68,13 +69,13 @@ public class PlayfieldDetection
         }
 
         // Special check for I character as it's 1 tile thick in pos 0 hence regular detection does not apply
-        if (temp.character == 'I')
+        if (temp.Character == 'I')
         {
             List<int> postActiveFieldPos = new List<int>();
-            postActiveFieldPos.Add(active.center);
-            foreach (var fieldPos in active.pos[active.currentPos])
+            postActiveFieldPos.Add(active.Center);
+            foreach (var fieldPos in active.Pos[active.CurrentPos])
             {
-                postActiveFieldPos.Add(active.center + fieldPos);
+                postActiveFieldPos.Add(active.Center + fieldPos);
             }
             
             List<int> postFieldpLocations = GetpLocation(postActiveFieldPos);
@@ -135,17 +136,20 @@ public class PlayfieldDetection
         temp.Duplicate(active);
         if (direction == (int) Direction.DOWN) // Down
         {
-            temp.center += 10;
+            temp.Center += 10;
         }
         List<int> activeFieldPos = InputDetection(temp, direction);
 
         List<int> bRenderField = new List<int>();
         foreach (var i in field)
         {
-            bRenderField.Add(i.center);
-            foreach (var id in i.pos[i.currentPos])
+            bRenderField.Add(i.Center);
+            if (i.Pos.Any())
             {
-                bRenderField.Add(i.center + id);
+                foreach (var id in i.Pos[i.CurrentPos])
+                {
+                    bRenderField.Add(i.Center + id);
+                }
             }
         }
 
@@ -153,11 +157,10 @@ public class PlayfieldDetection
         {
             if (bRenderField.Contains(i))
             {
-                Console.WriteLine("run");
-                Thread.Sleep(2000);
                 if (direction == (int) Direction.DOWN)
                 {
-                    active.center += 10;
+                    active.Center += 10;
+                    LineDetection(field);
                     Program.playfield.NewActive();
                 }
                 return true;
@@ -165,5 +168,244 @@ public class PlayfieldDetection
         }
 
         return false;
+    }
+
+    public void LineDetection(List<BlockType> field)
+    {
+        Dictionary<int, List<int>> positions = new Dictionary<int, List<int>>();
+        foreach (var i in field)
+        {
+            List<int> pos = new List<int>();
+            if (i.Pos.Any())
+            {
+                foreach (var j in i.Pos[i.CurrentPos])
+                {
+                    pos.Add(i.Center + j);
+                }
+            }
+            positions.Add(i.Center, pos);
+        }
+
+        int lines = 0;
+        int lineCharCount = 0;
+        List<int> replaceLines = new List<int>();
+        for (int i = Program.playfield.GetFieldSize() - 1; i > 0; i--)
+        {
+            if (positions.Keys.Contains(i))
+            {
+                lineCharCount++;
+            }
+
+            foreach (var l in positions.Values)
+            {
+                if (l.Contains(i))
+                {
+                    lineCharCount++;
+                }
+            }
+
+            if (lineCharCount == 10)
+            {
+                lines++;
+                for (int j = i; j < i+10; j++)
+                {
+                    replaceLines.Add(j);
+                }
+            }
+
+            if (i % 10 == 0)
+            {
+                lineCharCount = 0;
+            }
+        }
+        
+        Program.playfield.AddLines(lines);
+        switch (lines)
+        {
+            case 1:
+                Program.playfield.AddScore(40);
+                break;
+            case 2:
+                Program.playfield.AddScore(100);
+                break;
+            case 3:
+                Program.playfield.AddScore(300);
+                break;
+            case 4:
+                Program.playfield.AddScore(1200);
+                break;
+        }
+
+        if (replaceLines.Any())
+        {
+            List<int> toRemove = new List<int>();
+            foreach (var key in positions.Keys)
+            {
+                if (replaceLines.Contains(key))
+                {
+                    BlockType temp = new BlockType();
+                    foreach (BlockType type in field)
+                    {
+                        if (type.Center == key)
+                        {
+                            temp.Duplicate(type);
+                            field.Remove(type);
+                            toRemove.Add(key);
+                            break;
+                        }
+                    }
+
+                    if (temp.Pos.Any())
+                    {
+                        foreach (var i in temp.Pos[temp.CurrentPos])
+                        {
+                            if (!replaceLines.Contains(temp.Center + i))
+                            {
+                                Program.playfield.AddUndefinedBlock(new BlockType(temp.Center + i, new List<int[]>(), temp.Character, temp.Color));
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (toRemove.Any())
+            {
+                foreach (var key in toRemove)
+                {
+                    positions.Remove(key);
+                }
+            }
+
+            foreach (var valueList in positions.Values)
+            {
+                int center = 0;
+                foreach (var value in valueList)
+                {
+                    if (replaceLines.Contains(value))
+                    {
+                        center = positions.FirstOrDefault(val => val.Value == valueList).Key;
+                    }
+                }
+
+                if (center != 0)
+                {
+                    BlockType temp = new BlockType();
+                    foreach (BlockType type in field)
+                    {
+                        if (type.Center == center)
+                        {
+                            temp.Duplicate(type);
+                            field.Remove(type);
+                            break;
+                        }
+                    }
+
+                    if (!replaceLines.Contains(temp.Center))
+                    {
+                        Program.playfield.AddUndefinedBlock(new BlockType(temp.Center, new List<int[]>(), temp.Character, temp.Color));
+                    }
+
+                    if (temp.Pos.Any())
+                    {
+                        foreach (var i in temp.Pos[temp.CurrentPos])
+                        {
+                            if (!replaceLines.Contains(temp.Center + i))
+                            {
+                                Program.playfield.AddUndefinedBlock(new BlockType(temp.Center + i, new List<int[]>(), temp.Character, temp.Color));
+                            }
+                        }
+                    }
+                }
+            }
+
+            foreach (BlockType type in field)
+            {
+                if (type.Center > replaceLines.Min())
+                {
+                    continue;
+                }
+
+                if (type.Pos.Any())
+                {
+                    bool valid = true;
+                    foreach (var j in type.Pos[type.CurrentPos])
+                    {
+                        if (type.Center + j > replaceLines.Min())
+                        {
+                            valid = false;
+                            break;
+                        }
+                    }
+
+                    if (!valid)
+                    {
+                        continue;
+                    }
+                }
+
+                switch (lines)
+                {
+                    case 1:
+                        type.Center += 10;
+                        break;
+                    case 2:
+                        type.Center += 20;
+                        break;
+                    case 3:
+                        type.Center += 30;
+                        break;
+                    case 4:
+                        type.Center += 40;
+                        break;
+                }
+            }
+        }
+    }
+
+    private bool ValidPosition(BlockType type, List<BlockType> field)
+    {
+        List<int> typePos = new List<int>();
+        typePos.Add(type.Center);
+        if (type.Pos.Any())
+        {
+            foreach (var pos in type.Pos[type.CurrentPos])
+            {
+                typePos.Add(type.Center + pos);
+            }
+        }
+
+        foreach (var pos in typePos)
+        {
+            if (pos > Program.playfield.GetFieldSize())
+            {
+                return false;
+            }
+        }
+
+        foreach (var i in field)
+        {
+            if (i == type)
+            {
+                continue;
+            }
+
+            if (typePos.Contains(i.Center))
+            {
+                return false;
+            }
+
+            if (i.Pos.Any())
+            {
+                foreach (var pos in i.Pos[i.CurrentPos])
+                {
+                    if (typePos.Contains(i.Center + pos))
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 }
