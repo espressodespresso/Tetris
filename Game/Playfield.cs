@@ -1,4 +1,8 @@
-﻿namespace Game;
+﻿using System.Diagnostics;
+using System.Timers;
+using Timer = System.Timers.Timer;
+
+namespace Game;
 
 public class Playfield
 {
@@ -10,13 +14,17 @@ public class Playfield
     private List<BlockType> field = new List<BlockType>();
     private BlockType active = new BlockType();
     private PlayfieldDetection _playfieldDetection = new PlayfieldDetection();
+    private Timer timer;
+    
 
-    // Past Harry : Please never do active = blah again, tends to break stuff for some unknown reason
+    // Dev to Dev : Please never do active = ...
     // Do proprietary func .Duplicate instead
+    // Breaks pretty much all functions
     
     public Playfield()
     {
         active.Duplicate(_block.GetType(new Random().Next(0, 7)));
+        SetTimer();
     }
     
     public void NewActive()
@@ -62,25 +70,6 @@ public class Playfield
                 {
                     Console.WriteLine(displayChar);
                 }
-                
-                /*string print = displayChar.ToString();
-                switch (i)
-                {
-                    case 59:
-                        print = displayChar + "\tS C O R E";
-                        break;
-                    case 69:
-                        print = displayChar + ("\t" + score);
-                        break;
-                    case 99:
-                        print = displayChar + "\tL I N E S";
-                        break;
-                    case 109:
-                        print = displayChar + ("\t" + lines);
-                        break;
-                }
-                
-                Console.WriteLine(print);*/
             }
             else
             {
@@ -99,29 +88,38 @@ public class Playfield
     public Dictionary<int, char> Render()
     {
         Dictionary<int, char> renderField = new Dictionary<int, char>();
-        foreach (var blockType in field)
+        try
         {
-            renderField.Add(blockType.Center, blockType.Character);
-            if (blockType.Pos.Any())
+            foreach (var blockType in field)
             {
-                foreach (var posField in blockType.Pos[blockType.CurrentPos])
+                renderField.Add(blockType.Center, blockType.Character);
+                if (blockType.Pos.Any())
                 {
-                    renderField.Add(blockType.Center + posField, blockType.Character);
+                    foreach (var posField in blockType.Pos[blockType.CurrentPos])
+                    {
+                        renderField.Add(blockType.Center + posField, blockType.Character);
+                    }
                 }
             }
+
+            renderField.Add(active.Center, active.Character);
+
+            foreach (var posField in active.Pos[active.CurrentPos])
+            {
+                renderField.Add(active.Center + posField, active.Character);
+            }
         }
-            
-        renderField.Add(active.Center, active.Character);
-        
-        foreach (var posField in active.Pos[active.CurrentPos])
+        catch (ArgumentException)
         {
-            renderField.Add(active.Center + posField, active.Character);
+            CloseApp();
         }
         return renderField;
     }
 
     public void CloseApp()
     {
+        timer.Close();
+        timer.Dispose();
         Console.Clear();
         string line = "*******************************";
         Console.WriteLine(line);
@@ -165,6 +163,7 @@ public class Playfield
                         if (!_playfieldDetection.InterTDetection(field, active, (int) Direction.ROTATE))
                         {
                             active.VaryCurrentPos();
+                            _playfieldDetection.LineDetection(field);
                         }
                     }
                     Draw();
@@ -201,6 +200,7 @@ public class Playfield
                         }
                     }
                     Draw();
+                    InputDown();
                     break;
             }
             
@@ -208,19 +208,38 @@ public class Playfield
         }
     }
 
+    // https://learn.microsoft.com/en-us/dotnet/api/system.timers.timer?view=net-5.0
+    private void SetTimer()
+    {
+        timer = new Timer(2000);
+        timer.Elapsed += OnTimedEvent;
+        timer.AutoReset = true;
+        timer.Enabled = true;
+    }
+
+    private void InputDown()
+    {
+        timer.Stop();
+        timer.Dispose();
+        SetTimer();
+    }
+    
+    public void OnTimedEvent(Object source, ElapsedEventArgs e)
+    {
+        if (!_playfieldDetection.BoundaryDetection(field, active, (int) Direction.DOWN))
+        {
+            if (!_playfieldDetection.InterTDetection(field, active, (int) Direction.DOWN))
+            {
+                active.Center += 10;
+                _playfieldDetection.LineDetection(field);
+            }
+        }
+        Draw();
+    }
+
     public int GetFieldSize()
     {
         return x * y;
-    }
-
-    public int GetFieldX()
-    {
-        return x;
-    }
-
-    public int GetFieldY()
-    {
-        return y;
     }
 
     public void AddUndefinedBlock(BlockType undefined)

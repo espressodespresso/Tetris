@@ -42,6 +42,7 @@ public class PlayfieldDetection
         return activeFieldPos;
     }
 
+    // Checks if the active BlockTypes next move will put them outside of the 'grid' boundaries
     public bool BoundaryDetection(List<BlockType> field, BlockType active, int direction)
     {
         BlockType temp = new BlockType();
@@ -130,6 +131,7 @@ public class PlayfieldDetection
         return fieldpLocations;
     }
 
+    // Checks if the active BlockType will collide with a BlockType on the field (center & corresponding pos)
     public bool InterTDetection(List<BlockType> field, BlockType active, int direction)
     {
         BlockType temp = new BlockType();
@@ -169,7 +171,7 @@ public class PlayfieldDetection
 
         return false;
     }
-
+    
     public void LineDetection(List<BlockType> field)
     {
         Dictionary<int, List<int>> positions = new Dictionary<int, List<int>>();
@@ -276,6 +278,7 @@ public class PlayfieldDetection
                 }
             }
 
+            // In the case that the BlockTypes key isn't in the line to be deleted but a pos from the center is
             foreach (var valueList in positions.Values)
             {
                 int center = 0;
@@ -318,6 +321,7 @@ public class PlayfieldDetection
                 }
             }
 
+            // Gets all BlockTypes above the lines removed and brings them 'down' in the grid
             foreach (BlockType type in field)
             {
                 if (type.Center > replaceLines.Min())
@@ -360,52 +364,5 @@ public class PlayfieldDetection
                 }
             }
         }
-    }
-
-    private bool ValidPosition(BlockType type, List<BlockType> field)
-    {
-        List<int> typePos = new List<int>();
-        typePos.Add(type.Center);
-        if (type.Pos.Any())
-        {
-            foreach (var pos in type.Pos[type.CurrentPos])
-            {
-                typePos.Add(type.Center + pos);
-            }
-        }
-
-        foreach (var pos in typePos)
-        {
-            if (pos > Program.playfield.GetFieldSize())
-            {
-                return false;
-            }
-        }
-
-        foreach (var i in field)
-        {
-            if (i == type)
-            {
-                continue;
-            }
-
-            if (typePos.Contains(i.Center))
-            {
-                return false;
-            }
-
-            if (i.Pos.Any())
-            {
-                foreach (var pos in i.Pos[i.CurrentPos])
-                {
-                    if (typePos.Contains(i.Center + pos))
-                    {
-                        return false;
-                    }
-                }
-            }
-        }
-
-        return true;
     }
 }

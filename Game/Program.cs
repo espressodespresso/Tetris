@@ -3,6 +3,7 @@
 static class Program
 {
     public static Playfield playfield = new Playfield();
+    private static System.Timers.Timer timer;
     
     static void Main()
     {
@@ -15,4 +16,5 @@ static class Program
         Task user = Task.Factory.StartNew(() => playfield.PlayerInput());
         Task.WaitAll(user);
     }
+    
 }
