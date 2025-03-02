@@ -10,4 +10,4 @@ and much more. Self admittedly there are quite a few game breaking bugs and the 
 coding ability.
 ***
 ## Tech stack
-* Pure C#
+* C#
